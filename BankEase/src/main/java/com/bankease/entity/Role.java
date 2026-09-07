@@ -1,0 +1,1 @@
+package com.bankease.entity; public enum Role { USER, ADMIN }
