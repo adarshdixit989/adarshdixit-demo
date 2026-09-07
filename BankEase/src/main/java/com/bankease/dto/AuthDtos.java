@@ -1,0 +1,1 @@
+package com.bankease.dto; import jakarta.validation.constraints.*; public final class AuthDtos{public record RegisterRequest(@Email @NotBlank String email,@Size(min=8,max=100) String password){} public record LoginRequest(@Email @NotBlank String email,@NotBlank String password){} public record AuthResponse(String token,String tokenType,Long userId,String email,String role){}}
