@@ -1,0 +1,1 @@
+services:\n  - type: web\n    name: bankease-frontend\n    runtime: static\n    rootDir: BankEase/frontend\n    buildCommand: npm install && npm run build\n    staticPublishPath: ./dist\n    envVars:\n      - key: VITE_API_URL\n        value: https://bankease-api.onrender.com
