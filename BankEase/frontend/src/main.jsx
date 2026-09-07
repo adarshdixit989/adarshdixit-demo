@@ -1,6 +1,19 @@
 import React,{useEffect,useState}from'react';import{createRoot}from'react-dom/client';import{LogIn,UserPlus,Wallet,Send,ArrowDownToLine,ArrowUpFromLine,History,ShieldCheck,LogOut,Plus,CreditCard,X,RefreshCw}from'lucide-react';import'./style.css';
 const API=(import.meta.env.VITE_API_URL||'https://bankease-api.onrender.com').replace(/\/$/,'');
-const req=async(path,token,options={})=>{let r;try{r=await fetch(API+path,{...options,headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{}),...options.headers}})}catch(e){throw Error('BankEase API is waking up or unavailable. Please wait a few seconds and try again.')}let d=null;try{d=await r.json()}catch{}if(!r.ok)throw Error(d?.message||d?.error||'Request failed ('+r.status+')');return d};
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const req=async(path,token,options={})=>{
+  let r,last;
+  for(let attempt=0;attempt<3;attempt++){
+    try{
+      r=await fetch(API+path,{...options,headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{}),...options.headers}});
+      break;
+    }catch(e){last=e; if(attempt<2) await sleep(2500);}
+  }
+  if(!r) throw Error('BankEase API is waking up. Please wait 5–10 seconds and try again.');
+  let d=null; try{d=await r.json()}catch{}
+  if(!r.ok) throw Error(d?.message||d?.error||'Request failed ('+r.status+')');
+  return d;
+};
 function App(){const[token,setToken]=useState(localStorage.getItem('token')||'');const[user,setUser]=useState(JSON.parse(localStorage.getItem('user')||'null'));const[mode,setMode]=useState('login');const[form,setForm]=useState({name:'',email:'',password:''});const[msg,setMsg]=useState('');const[loading,setLoading]=useState(false);const[accounts,setAccounts]=useState([]);const[selected,setSelected]=useState(null);const[transactions,setTransactions]=useState([]);const[action,setAction]=useState(null);const[actionForm,setActionForm]=useState({amount:'',description:'',toAccount:''});
 const load=async()=>{try{const a=await req('/api/accounts',token);setAccounts(a||[]);if(!selected&&a?.length)setSelected(a[0]);else if(selected){const fresh=a.find(x=>x.accountNumber===selected.accountNumber);if(fresh)setSelected(fresh)}}catch(e){setMsg(e.message)}};useEffect(()=>{if(token)load()},[token]);
 const loadTx=async(a=selected)=>{if(!a)return;try{const d=await req('/api/accounts/'+a.accountNumber+'/transactions',token);setTransactions(d?.content||[])}catch(e){setMsg(e.message)}};
