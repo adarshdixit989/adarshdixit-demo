@@ -1,0 +1,4 @@
+package com.bankease.entity;
+import jakarta.persistence.*; import lombok.*; import java.math.BigDecimal; import java.time.LocalDateTime;
+@Entity @Table(name="accounts",indexes=@Index(name="idx_accounts_number",columnList="account_number",unique=true)) @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+public class Account { @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id; @Column(name="account_number",nullable=false,unique=true,length=24) private String accountNumber; @ManyToOne(fetch=FetchType.LAZY,optional=false) @JoinColumn(name="user_id") private User user; @Column(nullable=false,precision=19,scale=2) private BigDecimal balance=BigDecimal.ZERO; @Column(nullable=false) private boolean active=true; @Column(nullable=false,updatable=false) private LocalDateTime createdAt; @Version private Long version; @PrePersist void prePersist(){createdAt=LocalDateTime.now();} }
